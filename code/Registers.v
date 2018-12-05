@@ -29,7 +29,7 @@ assign  RTdata_o = register[RTaddr_i];
 
 // Write Data   
 always@(posedge clk_i) begin
-    if(RegWrite_i)
+    if(RegWrite_i and RDaddr_i!=5'b00000)
         register[RDaddr_i] <= RDdata_i;
 end
    
