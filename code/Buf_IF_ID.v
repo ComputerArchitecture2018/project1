@@ -3,8 +3,8 @@ input[31:0]pc_i,inst_i;
 input IF_flush_i; //TODO
 reg[31:0]pc_reg_i,inst_reg_i;
 reg[31:0]pc_reg_o,inst_reg_o;
-assign pc_o=pc_reg;
-assign inst_o=inst_reg;
+assign pc_o=pc_reg_o;
+assign inst_o=inst_reg_o;
 always @(posedge clk) begin
 	pc_reg_i<=pc_i;
 	inst_reg_i<=inst_i;
