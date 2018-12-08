@@ -1,16 +1,16 @@
 module Hazard_Detect(
 	ID_EX_M,
-	write_addr,
-	read_addr,
+	reg1_addr,
+	reg2_addr,
 	IF_Op,
 	Pc_Op,
-	Mux_Op
+	Valid
 );
-input ID_EX_M;
-input [4:0] write_addr,read_addr;
-output IF_Op,Pc_Op,Mux_Op;
+input [2:0]ID_EX_M;
+input [4:0] reg1_addr,reg2_addr;
+output IF_Op,Pc_Op,Valid;
 
-assign IF_Op = (ID_EX_M == 1 and write_addr == read_addr )?1:0;
-assign Pc_Op = (ID_EX_M == 1 and write_addr == read_addr )?1:0;
-assign Mux_Op = (ID_EX_M == 1 and write_addr == read_addr )?1:0;
+assign IF_Op = (ID_EX_M == 3'b000 and reg1_addr == reg2_addr )?1:0;
+assign Pc_Op = (ID_EX_M == 3'b000 and reg1_addr == reg2_addr )?1:0;
+assign Valid = (ID_EX_M == 3'b000 and reg1_addr == reg2_addr )?0:1;
 endmodule
