@@ -1,24 +1,25 @@
 module Control(
-	inst,
-	flush_op,
-	Beq,//Came from the wire from ID/EX
-	Opcode,
-	EX,
-	Valid,
-	select,//alu source. 0: rs2, 1: imm
-	PC_MUX_op
+	inst,//input
+	Beq,//input: Came from the wire from ID/EX
+	flush_op,//output: go to IF/ID buffer
+	Opcode,//output: go to ID/EX buffer
+	Valid,//output: go to ID/EX buffer
+	//select,//output, alu source. 0: rs2, 1: imm
+	PC_MUX_op//output: go to PC Mux
 );
 input Beq;
 input [31:0]inst;
-wire [2:0] func;
-wire [6:0] Op;
-output flush_op,select;
-output [2:0]EX,Opcode;
+output flush_op;
+output [2:0]Opcode;
 output Valid,PC_MUX_op;
+wire [2:0] func;
+wire [2:0] Op;
+wire select;
+wire[2:0]EX;
 assign data_flush = (Beq == 1)?1:0;
 assign PC_MUX_op = (Beq == 1)?1:0;
 assign func = inst[14:12];
-assign Op = inst[6:0];
+assign Op = inst[6:4];
 
 assign select = ({inst[6]} == 1'b1)? 1'b0://beq
 			(inst[5] == 1'b0 && inst[4] == 1'b1)? 1'b1://addi 

@@ -14,14 +14,48 @@ wire[31:0]inst_addr,inst;
 wire[31:0]next_inst_addr;
 
 Control Control(
-    .Op_i       (inst[6:0]),
-    .RegDst_o   (MUX_RegDst.select_i),
-    .ALUOp_o    (ALU_Control.ALUOp_i),
-    .ALUSrc_o   (MUX_ALUSrc.select_i),
-    .RegWrite_o (Registers.RegWrite_i)
+	.inst       (inst),
+	.Beq        (ID_Beq.Beq),
+	.flush_op   (Buffer_IF_ID.IF_flush_i),
+	.Opcode     (Buffer_ID_EX.Op_i),//TODO
+	.Valid      (Buffer_ID_EX.valid_i),//TODO
+	.PC_MUX_op   (PC_Mux.select_i)//TODO
 );
 
+Buf_IF_ID Buffer_IF_ID(
+	.clk_i(clk_i),
+	.pc_i(inst_addr),
+	.inst_i(inst),
+	.IF_flush_i(Control.flush_op),
+	.pc_o(),//TODO
+	.inst_o()//TODO
+);
 
+Buf_ID_EX Buffer_ID_EX(
+	.clk_i(clk_i),
+	.rs1_data_i(Registers.RSdata_o),
+	.rs2_data_i(Registers.RTdata_o),
+	.imm_i(),//TODO
+	.rs1_i(),//TODO
+	.rs2_i(),//TODO
+	.rsd_i(),//TODO
+	.Op_i(Control.Opcode),
+	.valid_i(Control.Valid),
+	.rs1_data_o(),//TODO
+	.rs2_data_o(),//TODO
+	.imm_o(),//TODO
+	.rs1_o(),//TODO
+	.rs2_o(),//TODO
+	.Op_o(),//TODO
+	.valid_o()//TODO
+);
+
+Beq ID_Beq(
+	.data1_i(),//TODO
+	.data2_i(),//TODO
+	.Beq_Op(),//TODO
+	.Beq(Control.Beq)
+);
 
 Adder Add_PC(
     .data1_in   (inst_addr),
@@ -34,8 +68,15 @@ PC PC(
     .clk_i      (clk_i),
     .rst_i      (rst_i),
     .start_i    (start_i),
-    .pc_i       (next_inst_addr),
+    .pc_i       (PC_Mux.data_o),
     .pc_o       (inst_addr)
+);
+
+MUX32 PC_Mux(
+	.data1_i(next_inst_addr),
+	.data2_i(),//TODO
+	.select_i(Control.PC_MUX_op),
+	.data_o(PC.pc_i)
 );
 
 Instruction_Memory Instruction_Memory(
