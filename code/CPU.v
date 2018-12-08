@@ -10,44 +10,55 @@ input               clk_i;
 input               rst_i;
 input               start_i;
 
-wire[31:0]inst_addr,inst;
+wire[31:0]inst_addr;
 wire[31:0]next_inst_addr;
+wire PC_Mux_select;
+wire[31:0]inst_IF,inst_ID;
+wire[31:0]pc_ID;
+wire[31:0]rs1_data_ID,rs1_data_EX;
+wire[31:0]rs2_data_ID,rs2_data_EX;
+wire[31:0]imm_ID,imm_EX;
+wire[4:0]rs1_ID,rs1_EX;
+wire[4:0]rs2_ID,rs2_EX;
+wire[4:0]rsd_ID,rsd_EX;
+wire[2:0]opcode_ID,opcode_EX,opcode_MEM;
+wire valid_ID,valid_EX,valid_MEM;
 
 Control Control(
-	.inst       (inst),
+	.inst       (inst_ID),
 	.Beq        (ID_Beq.Beq),
 	.flush_op   (Buffer_IF_ID.IF_flush_i),
-	.Opcode     (Buffer_ID_EX.Op_i),//TODO
-	.Valid      (Buffer_ID_EX.valid_i),//TODO
-	.PC_MUX_op   (PC_Mux.select_i)//TODO
+	.Opcode     (opcode_ID),
+	.Valid      (valid_ID),
+	.PC_MUX_op   (PC_Mux_select)
 );
 
 Buf_IF_ID Buffer_IF_ID(
 	.clk_i(clk_i),
 	.pc_i(inst_addr),
-	.inst_i(inst),
+	.inst_i(inst_IF),
 	.IF_flush_i(Control.flush_op),
-	.pc_o(),//TODO
-	.inst_o()//TODO
+	.pc_o(pc_ID),
+	.inst_o(inst_ID)
 );
 
 Buf_ID_EX Buffer_ID_EX(
 	.clk_i(clk_i),
-	.rs1_data_i(Registers.RSdata_o),
-	.rs2_data_i(Registers.RTdata_o),
-	.imm_i(),//TODO
-	.rs1_i(),//TODO
-	.rs2_i(),//TODO
-	.rsd_i(),//TODO
-	.Op_i(Control.Opcode),
-	.valid_i(Control.Valid),
-	.rs1_data_o(),//TODO
-	.rs2_data_o(),//TODO
-	.imm_o(),//TODO
-	.rs1_o(),//TODO
-	.rs2_o(),//TODO
-	.Op_o(),//TODO
-	.valid_o()//TODO
+	.rs1_data_i(rs1_data_ID),
+	.rs2_data_i(rs2_data_ID),
+	.imm_i(imm_ID),
+	.rs1_i(rs1_ID),
+	.rs2_i(rs2_ID),
+	.rsd_i(rsd_ID),
+	.Op_i(opcode_ID),
+	.valid_i(valid_ID),
+	.rs1_data_o(rs1_data_EX),
+	.rs2_data_o(rs2_data_EX),
+	.imm_o(imm_EX),
+	.rs1_o(rs1_EX),
+	.rs2_o(rs2_EX),
+	.Op_o(opcode_EX),
+	.valid_o(valid_EX)
 );
 
 Beq ID_Beq(
@@ -75,22 +86,22 @@ PC PC(
 MUX32 PC_Mux(
 	.data1_i(next_inst_addr),
 	.data2_i(),//TODO
-	.select_i(Control.PC_MUX_op),
+	.select_i(PC_Mux_select),
 	.data_o(PC.pc_i)
 );
 
 Instruction_Memory Instruction_Memory(
     .addr_i     (PC.pc_o), 
-    .instr_o    (inst)
+    .instr_o    (inst_IF)
 );
 
 Registers Registers(
     .clk_i      (clk_i),
-    .RSaddr_i   (inst[19:15]),
-    .RTaddr_i   (inst[24:20]),
-    .RDaddr_i   (inst[11:7]), 
+    .RSaddr_i   (inst_ID[19:15]),
+    .RTaddr_i   (inst_ID[24:20]),
+    .RDaddr_i   (inst_ID[11:7]), 
     .RDdata_i   (ALU.data_o),
-    .RegWrite_i (Control.RegWrite_o), 
+    .RegWrite_i (),//TODO
     .RSdata_o   (ALU.data1_i), 
     .RTdata_o   (MUX_ALUSrc.data1_i) 
 );
@@ -106,16 +117,16 @@ MUX5 MUX_RegDst(
 
 
 MUX32 MUX_ALUSrc(
-    .data1_i    (Registers.RTdata_o),
-    .data2_i    (Sign_Extend.data_o),
-    .select_i   (Control.ALUSrc_o),
+    .data1_i    (),//TODO rs2 data
+    .data2_i    (),//TODO imm
+    .select_i   (),//TODO
     .data_o     (ALU.data2_i)
 );
 
 
 
 Sign_Extend Sign_Extend(
-    .data_i     (inst[31:0]),
+    .data_i     (inst_ID[31:0]),
     .data_o     (MUX_ALUSrc.data2_i)
 );
 
