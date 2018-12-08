@@ -1,4 +1,4 @@
-module Sign_Extend(inst_i,imm_o);
+module ImmGen(inst_i,imm_o);
 input[31:0]inst_i;
 output[11:0]imm_o;
 assign imm_o=({inst_i[6:0]}==7'b1100011)?
