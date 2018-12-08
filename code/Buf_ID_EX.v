@@ -7,6 +7,8 @@ module Buf_IF_ID(
 	rs2_i,
 	rsd_i,
 	Op_i,
+	valid_i,
+	branch_i,
 	rs1_data_o,
 	rs2_data_o,
 	imm_o,
@@ -14,21 +16,27 @@ module Buf_IF_ID(
 	rs2_o,
 	rsd_o,
 	Op_o,
+	valid_o,
+	branch_o
 );
 input clk_i;
 input[31:0]rs1_data_i,rs2_data_i,imm_i;
 output[31:0]rs1_data_o,rs2_data_o,imm_o;
 input[4:0]rs1_i,rs2_i,rsd_i;
 output[4:0]rs1_o,rs2_o,rsd_o;
-input Op_i;
-output Op_o;
+input[2:0] Op_i;
+output[2:0] Op_o;
+input valid_i,branch_i;
+output valid_o,branch_o;
 
 reg[31:0]rs1_data_reg_i,rs2_data_reg_i,imm_reg_i;
 reg[31:0]rs1_data_reg_o,rs2_data_reg_o,imm_reg_o;
 reg[4:0]rs1_reg_i,rs2_reg_i,rsd_reg_i;
 reg[4:0]rs1_reg_o,rs2_reg_o,rsd_reg_o;
-reg Op_reg_i;
-reg Op_reg_o;
+reg[2:0] Op_reg_i;
+reg[2:0] Op_reg_o;
+reg valid_reg_i,branch_reg_i;
+reg valid_reg_o,branch_reg_o;
 assign rs1_data_o=rs1_data_reg_o;
 assign rs2_data_o=rs2_data_reg_o;
 assign imm_o=imm_reg_o;
@@ -36,6 +44,8 @@ assign rs1_o=rs1_reg_o;
 assign rs2_o=rs2_reg_o;
 assign rsd_o=rsd_reg_o;
 assign Op_o=Op_reg_o;
+assign valid_o=valid_reg_o;
+assign branch_o=branch_reg_o;
 always @(posedge clk_i) begin
 	rs1_data_reg_i<=rs1_data_i;
 	rs2_data_reg_i<=rs2_data_i;
@@ -44,6 +54,8 @@ always @(posedge clk_i) begin
 	rs2_reg_i<=rs2_i;
 	rsd_reg_i<=rsd_i;
 	Op_reg_i<=Op_i;
+	valid_reg_i<=valid_i;
+	branch_reg_i<=branch_i;
 end
 always @(negedge clk_i) begin
 	rs1_data_reg_o<=rs1_data_reg_i;
@@ -53,5 +65,7 @@ always @(negedge clk_i) begin
 	rs2_reg_o<=rs2_reg_i;
 	rsd_reg_o<=rsd_reg_i;
 	Op_reg_o<=Op_reg_i;
+	valid_reg_o<=valid_reg_i;
+	branch_reg_o<=branch_reg_i;
 end
 endmodule
