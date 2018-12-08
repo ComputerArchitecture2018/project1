@@ -1,4 +1,4 @@
-module Buf_IF_ID(
+module Buf_ID_EX(
 	clk_i,
 	rs1_data_i,
 	rs2_data_i,
