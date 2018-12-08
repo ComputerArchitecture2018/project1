@@ -4,18 +4,21 @@ module Control(
 	Beq,//Came from the wire from ID/EX
 	Opcode,
 	EX,
-	Mux_op,
-	select
+	Valid,
+	select,
+	PC_MUX_op
 );
 input Beq;
 input [31:0]inst;
 reg [2:0] func;
+reg [6:0] Op;
 output flush_op,select;
 output [2:0]EX,Opcode;
-output WB,M,Mux_op;
+output Valid,PC_MUX_op;
 assign data_flush = (Beq == 1)?1:0;
-assign Mux_op = (Beq == 1)?1:0;
+assign PC_MUX_op = (Beq == 1)?1:0;
 assign func = [14:12]inst;
+assign Op = [6:0]inst;
 
 assign select = (inst[6] == 1)? 0://beq
 			(inst[5] == 0 and inst[4] == 1)? 1://addi 
@@ -36,5 +39,7 @@ assign EX = (inst[6] == 1)? 3'b110://beq
 			(func == 3'b111)? 3'b001://and
 			(func == 3'b110)? 3'b010;//or
 assign Opcode = [6:4]inst;
+
+assign Valid = (Op == 7'b0110011 or Op == 7'b0010011 or Op == 7'b0100011 or Op == 7'b0000011 or Op == 7'b1100011)? 1:0;
 
 endmodule
