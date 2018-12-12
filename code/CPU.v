@@ -202,7 +202,7 @@ Forwarding_Unit Forwarding_Unit(//TODO
 	.RegWrite_pp_i(),
 	.Rd_pp_i(),
 	.ForwardA_o(forward_A),
-	.ForwardB_o(forward_B),
+	.ForwardB_o(forward_B)
 );
 
 MUX32_3i MUX_ALU_data1(
@@ -218,7 +218,7 @@ MUX32_3i MUX_ALU_data2(
 	.data2_i(alu_result_MEM),
 	.data3_i(alu_result_WB),
 	.select_i(forward_B),
-	.data_o(alu_data2_EX),
+	.data_o(alu_data2_EX)
 );
 
 ALUSrc_Gen EX_ALUSrc_Gen(
