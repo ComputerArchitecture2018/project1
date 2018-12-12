@@ -152,7 +152,10 @@ Registers Registers(
     .RTaddr_i   (inst_ID[24:20]),
     .RDaddr_i   (inst_ID[11:7]), 
     .RDdata_i   (alu_result_WB),
-    .RegWrite_i (),//TODO signal from WB stage
+    .RegWrite_i (
+		(opcode_WB==3'b011||
+		 opcode_WB==3'b001||
+		 opcode_WB==3'b000)? 1'b1:1'b0),//signal from WB stage
     .RSdata_o   (rs1_data_ID), 
     .RTdata_o   (rs2_data_ID) 
 );
