@@ -171,6 +171,15 @@ MUX32 RegWriteSrc_Mux(
 	.data_o(register_input_WB)
 );
 
+<<<<<<< HEAD
+Data_Memory Data_Memory(
+	.clk_i(clk_i),
+	.addr_i(alu_result_MEM),
+	.data_i(alu_data2_MEM),
+	.mem_write_i((opcode_MEM==3'b010)? 1'b1:1'b0),
+	.data_o(data_memory_result)
+);
+=======
 wire regwrite_MEM,regwrite_WB;
 assign regwrite_MEM=(opcode_MEM==3'b011||
 					 opcode_MEM==3'b001||
@@ -178,6 +187,7 @@ assign regwrite_MEM=(opcode_MEM==3'b011||
 assign regwrite_WB =(opcode_WB==3'b011||
 					 opcode_WB==3'b001||
 					 opcode_WB==3'b000)? 1'b1:1'b0;
+>>>>>>> 5b288d22e40e4be0f092f2bd0539c283303f5fe7
 
 Registers Registers(
     .clk_i      (clk_i),
