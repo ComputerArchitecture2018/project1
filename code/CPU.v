@@ -195,11 +195,15 @@ assign regwrite_WB =(opcode_WB==3'b011||
 					 opcode_WB==3'b001||
 					 opcode_WB==3'b000)? 1'b1:1'b0;
 
+assign rs1_ID=inst_ID[19:15];
+assign rs2_ID=inst_ID[24:20];
+assign rsd_ID=inst_ID[11:7];
+
 Registers Registers(
     .clk_i      (clk_i),
-    .RSaddr_i   (inst_ID[19:15]),
-    .RTaddr_i   (inst_ID[24:20]),
-    .RDaddr_i   (inst_ID[11:7]), 
+    .RSaddr_i   (rs1_ID),
+    .RTaddr_i   (rs2_ID),
+    .RDaddr_i   (rsd_WB), 
     .RDdata_i   (register_input_WB),
     .RegWrite_i (regwrite_WB),
     .RSdata_o   (rs1_data_ID), 
