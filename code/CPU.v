@@ -20,8 +20,9 @@ wire[31:0]alu_data2_EX;
 wire[11:0]immgen_12bit_ID;
 wire[2:0]alu_control_EX;
 wire[1:0]alu_op_EX;
+wire alu_src_EX;
 
-wire[31:0]inst_IF,inst_ID,inst_EX;
+wire[31:0]inst_IF,inst_ID,inst_EX;//TODO connect inst_EX
 wire[31:0]pc_ID;
 wire[31:0]rs1_data_ID,rs1_data_EX;
 wire[31:0]rs2_data_ID,rs2_data_EX;
@@ -162,12 +163,15 @@ MUX5 MUX_RegDst(
     .data_o     ()
 );
 
-
+ALUSrc_Gen EX_ALUSrc_Gen(
+	.opcode_i(opcode_EX),
+	.ALUSrc_o(alu_src_EX)
+);
 
 MUX32 MUX_ALUSrc(
     .data1_i    (rs2_data_EX),
     .data2_i    (imm_EX),
-    .select_i   (),//TODO alusrc
+    .select_i   (alu_src_EX),
     .data_o     (alu_data2_EX)
 );
 
@@ -181,16 +185,20 @@ Sign_Extend Sign_Extend(
     .data_o     (imm_ID)
 );
 
-wire[31:0]zero;
+wire[31:0]zero_EX;
 
 ALU ALU(
     .data1_i    (rs1_data_EX),
     .data2_i    (alu_data2_EX),
     .ALUCtrl_i  (alu_control_EX),
     .data_o     (alu_result_EX),
-    .Zero_o     (zero)
+    .Zero_o     (zero_EX)
 );
 
+ALUOpGen EX_ALUOpGen(
+	.opcode_i(opcode_EX),
+	.ALU_Op_o(alu_op_EX)
+);
 
 ALU_Control ALU_Control(
     .funct_i    ({{inst_EX[30]},{inst_EX[25]},{inst_EX[14:12]}}),
