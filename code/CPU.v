@@ -30,7 +30,7 @@ wire[31:0]imm_ID,imm_EX,imm_shifted_ID;
 wire[31:0]alu_result_EX,alu_result_MEM,alu_result_WB;
 wire[4:0]rs1_ID,rs1_EX;
 wire[4:0]rs2_ID,rs2_EX,rs2_MEM;
-wire[4:0]rsd_ID,rsd_EX,rsd_MEM;
+wire[4:0]rsd_ID,rsd_EX,rsd_MEM,rsd_WB;
 wire[2:0]opcode_ID,opcode_EX,opcode_MEM,opcode_WB;
 wire valid_ID,valid_EX,valid_MEM,valid_WB;
 wire[31:0]memory_data_MEM,memory_data_WB;
@@ -97,10 +97,12 @@ Buf_MEM_WB Buffer_MEM_WB(
 	.clk_i(clk_i),
 	.alu_result_i(alu_result_MEM),
 	.memory_data_i(memory_data_MEM),
+	.rsd_i(rsd_MEM),
 	.Op_i(opcode_MEM),
 	.valid_i(valid_MEM),
 	.alu_result_o(alu_result_WB),
 	.memory_data_o(memory_data_WB),
+	.rsd_o(rsd_WB),
 	.Op_o(opcode_WB),
 	.valid_o(valid_WB)
 );
@@ -167,16 +169,21 @@ MUX32 RegWriteSrc_Mux(
 	.data_o(register_input_WB)
 );
 
+wire regwrite_MEM,regwrite_WB;
+assign regwrite_MEM=(opcode_MEM==3'b011||
+					 opcode_MEM==3'b001||
+					 opcode_MEM==3'b000)? 1'b1:1'b0;
+assign regwrite_WB =(opcode_WB==3'b011||
+					 opcode_WB==3'b001||
+					 opcode_WB==3'b000)? 1'b1:1'b0;
+
 Registers Registers(
     .clk_i      (clk_i),
     .RSaddr_i   (inst_ID[19:15]),
     .RTaddr_i   (inst_ID[24:20]),
     .RDaddr_i   (inst_ID[11:7]), 
     .RDdata_i   (register_input_WB),
-    .RegWrite_i (
-		(opcode_WB==3'b011||
-		 opcode_WB==3'b001||
-		 opcode_WB==3'b000)? 1'b1:1'b0),//signal from WB stage
+    .RegWrite_i (regwrite_WB),
     .RSdata_o   (rs1_data_ID), 
     .RTdata_o   (rs2_data_ID) 
 );
@@ -195,12 +202,12 @@ wire[31:0]alu_data1_EX,alu_data2_mux_input;
 wire[1:0]forward_A,forward_B;
 
 Forwarding_Unit Forwarding_Unit(//TODO
-	.Rs1_i(),
-	.Rs2_i(),
-	.RegWrite_p_i(),
-	.Rd_p_i(),
-	.RegWrite_pp_i(),
-	.Rd_pp_i(),
+	.Rs1_i(rs1_EX),
+	.Rs2_i(rs2_EX),
+	.RegWrite_p_i(regwrite_MEM),
+	.Rd_p_i(rsd_MEM),
+	.RegWrite_pp_i(regwrite_WB),
+	.Rd_pp_i(rsd_WB),
 	.ForwardA_o(forward_A),
 	.ForwardB_o(forward_B)
 );
