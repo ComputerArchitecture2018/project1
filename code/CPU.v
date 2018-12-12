@@ -37,6 +37,7 @@ wire[31:0]memory_data_MEM,memory_data_WB;
 wire[31:0]add_result_Ah_Jia;
 wire reg_src_WB;//0:alu, 1:memory
 wire[31:0]register_input_WB;
+wire pc_write;
 
 Control Control(
 	.inst       (inst_ID),
@@ -136,6 +137,7 @@ PC PC(
     .clk_i      (clk_i),
     .rst_i      (rst_i),
     .start_i    (start_i),
+	.pc_write_i(pc_write),
     .pc_i       (pc_input),
     .pc_o       (inst_addr)
 );
