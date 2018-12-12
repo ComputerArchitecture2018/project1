@@ -104,7 +104,7 @@ Buf_MEM_WB Buffer_MEM_WB(
 Beq ID_Beq(
 	.data1_i(rs1_data_ID),
 	.data2_i(rs2_data_ID),
-	.Beq_Op(),//TODO branch signal
+	.Beq_Op(opcode_ID==110? 1'b1:1'b0),
 	.Beq(ID_beq_result)
 );
 
