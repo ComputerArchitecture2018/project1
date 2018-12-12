@@ -162,7 +162,7 @@ MUX32 RegWriteSrc_Mux(
 Data_Memory Data_Memory(
 	.clk_i(clk_i),
 	.addr_i(alu_result_MEM),
-	.data_i(alu_data2_MEM).
+	.data_i(alu_data2_MEM),
 	.mem_write_i((opcode_MEM==3'b010)? 1'b1:1'b0),
 	.data_o(data_memory_result)
 );
