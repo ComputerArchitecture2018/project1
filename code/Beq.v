@@ -5,8 +5,8 @@ module Beq(
 	Beq //connect to the ID/EX
 );
 input [31:0] data1_i, data2_i;
-input Beq_Op;
+input [6:0]Beq_Op;
 output Beq;
 
-assign Beq = (Beq_Op == 1 && data1_i == data2_i)?1:0;
+assign Beq = (Beq_Op[6] == 1 && data1_i == data2_i)?1:0;
 endmodule
