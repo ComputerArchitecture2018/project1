@@ -39,6 +39,7 @@ wire reg_src_WB;//0:alu, 1:memory
 wire[31:0]register_input_WB;
 wire pc_write;
 wire Hazard_Detect_Valid,Control_Valid;
+wire Control_IF_flush_signal,Hazard_IF_flush_signal;
 
 assign valid_ID=Hazard_Detect_Valid&Control_Valid;
 assign pc_write=~IF_flush_signal;//IF_flush: stall
