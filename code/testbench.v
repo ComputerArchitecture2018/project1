@@ -7,6 +7,8 @@ reg                Reset;
 reg                Start;
 integer            i, outfile, counter;
 
+reg[5:0]j;
+
 always #(`CYCLE_TIME/2) Clk = ~Clk;    
 
 CPU CPU(
@@ -25,10 +27,14 @@ initial begin
         CPU.Instruction_Memory.memory[i] = 32'b0;
     end
     
-        
     // initialize Register File
     for(i=0; i<32; i=i+1) begin
         CPU.Registers.register[i] = 32'b0;
+    end
+
+    CPU.Data_Memory.memory[0] = 5;
+    for(i=1; i<256; i=i+1) begin
+        CPU.Data_Memory.memory[i] = 32'b0;
     end
     
     // Load instructions into instruction memory
@@ -47,11 +53,15 @@ initial begin
         
     
 end
-  
 always@(posedge Clk) begin
     if(counter == 30)    // stop after 30 cycles
         $stop;
-        
+    
+    // print Start, Stall, Flush;
+    $fdisplay(outfile, "cycle = %d, Start = %d, Stall = %d, Flush = %d",
+        counter, Start, CPU.IF_stall_signal, CPU.IF_flush_signal
+    );
+
     // print PC
     $fdisplay(outfile, "PC = %d", CPU.PC.pc_o);
     
@@ -66,6 +76,9 @@ always@(posedge Clk) begin
     $fdisplay(outfile, "R6(a2) = %d, R14(t6) = %d, R22(s6) = %d, R30(s8) = %d", CPU.Registers.register[6], CPU.Registers.register[14], CPU.Registers.register[22], CPU.Registers.register[30]);
     $fdisplay(outfile, "R7(a3) = %d, R15(t7) = %d, R23(s7) = %d, R31(ra) = %d", CPU.Registers.register[7], CPU.Registers.register[15], CPU.Registers.register[23], CPU.Registers.register[31]);
     
+    for(j=0; j<32; j=j+4) begin
+        $fdisplay(outfile, "Data Memory: 0x%h = %d", j, CPU.Data_Memory.memory[j]);
+    end
     $fdisplay(outfile, "\n");
     
     counter = counter + 1;
