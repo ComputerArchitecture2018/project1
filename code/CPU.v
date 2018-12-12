@@ -38,13 +38,18 @@ wire[31:0]add_result_Ah_Jia;
 wire reg_src_WB;//0:alu, 1:memory
 wire[31:0]register_input_WB;
 wire pc_write;
-wire Hazard_Detect_Valid;
+wire Hazard_Detect_Valid,Control_Valid;
+
+assign valid_ID=Hazard_Detect_Valid&Control_Valid;
+assign pc_write=~IF_flush_signal;//IF_flush: stall
+assign IF_flush_signal=Control_IF_flush_signal&Hazard_IF_flush_signal;
+
 Control Control(
 	.inst       (inst_ID),
 	.Beq        (ID_beq_result),
-	.flush_op   (IF_flush_signal),
+	.flush_op   (Control_IF_flush_signal),
 	.Opcode     (opcode_ID),
-	.Valid      (valid_ID),
+	.Valid      (Control_Valid),
 	.PC_MUX_op   (PC_Mux_select)
 );
 
@@ -53,8 +58,7 @@ Hazard_Detect Hazard_Detect(
 	.reg1_addr	(inst_ID[19:15]),
 	.reg2_addr	(inst_ID[24:20]),
 	.regd_addr	(rsd_EX),
-	.IF_Op	(IF_flush_signal),
-	.Pc_Op	(PC_Mux_select),
+	.IF_Op	(Hazard_IF_flush_signal),
 	.Valid	(Hazard_Detect_Valid)
 );
 
