@@ -22,7 +22,7 @@ wire[2:0]alu_control_EX;
 wire[1:0]alu_op_EX;
 wire alu_src_EX;
 
-wire[31:0]inst_IF,inst_ID,inst_EX;
+wire[31:0]inst_IF,inst_ID,inst_EX;//TODO connect inst_EX
 wire[31:0]pc_ID;
 wire[31:0]rs1_data_ID,rs1_data_EX;
 wire[31:0]rs2_data_ID,rs2_data_EX;
@@ -35,6 +35,8 @@ wire[2:0]opcode_ID,opcode_EX,opcode_MEM,opcode_WB;
 wire valid_ID,valid_EX,valid_MEM,valid_WB;
 wire[31:0]memory_data_MEM,memory_data_WB;
 wire[31:0]add_result_Ah_Jia;
+wire[6:0]beq_signal;
+assign beq_signal = [6:0]inst_ID;
 
 Control Control(
 	.inst       (inst_ID),
@@ -56,7 +58,6 @@ Buf_IF_ID Buffer_IF_ID(
 
 Buf_ID_EX Buffer_ID_EX(
 	.clk_i(clk_i),
-	.inst_i(inst_ID),
 	.rs1_data_i(rs1_data_ID),
 	.rs2_data_i(rs2_data_ID),
 	.imm_i(imm_ID),
@@ -65,7 +66,6 @@ Buf_ID_EX Buffer_ID_EX(
 	.rsd_i(rsd_ID),
 	.Op_i(opcode_ID),
 	.valid_i(valid_ID),
-	.inst_o(inst_EX),
 	.rs1_data_o(rs1_data_EX),
 	.rs2_data_o(rs2_data_EX),
 	.imm_o(imm_EX),
@@ -104,7 +104,7 @@ Buf_MEM_WB Buffer_MEM_WB(
 Beq ID_Beq(
 	.data1_i(rs1_data_ID),
 	.data2_i(rs2_data_ID),
-	.Beq_Op(),//TODO branch signal
+	.Beq_Op(beq_signal),//TODO branch signal
 	.Beq(ID_beq_result)
 );
 
@@ -210,4 +210,3 @@ ALU_Control ALU_Control(
 
 
 endmodule
-
