@@ -38,7 +38,7 @@ wire[31:0]add_result_Ah_Jia;
 wire reg_src_WB;//0:alu, 1:memory
 wire[31:0]register_input_WB;
 wire pc_write;
-
+wire Hazard_Detect_Valid;
 Control Control(
 	.inst       (inst_ID),
 	.Beq        (ID_beq_result),
@@ -46,6 +46,16 @@ Control Control(
 	.Opcode     (opcode_ID),
 	.Valid      (valid_ID),
 	.PC_MUX_op   (PC_Mux_select)
+);
+
+Hazard_Detect Hazard_Detect(
+	.ID_EX_M	(opcode_EX),
+	.reg1_addr	(inst_ID[19:15]),
+	.reg2_addr	(inst_ID[24:20]),
+	.regd_addr	(rsd_EX),
+	.IF_Op	(IF_flush_signal),
+	.PC_Op	(PC_Mux_select),
+	.Valid	(Hazard_Detect_Valid)
 );
 
 Buf_IF_ID Buffer_IF_ID(
@@ -74,6 +84,7 @@ Buf_ID_EX Buffer_ID_EX(
 	.imm_o(imm_EX),
 	.rs1_o(rs1_EX),
 	.rs2_o(rs2_EX),
+	.rsd_o(rsd_EX),
 	.Op_o(opcode_EX),
 	.valid_o(valid_EX)
 );
@@ -265,4 +276,3 @@ ALU_Control ALU_Control(
 
 
 endmodule
-
