@@ -54,7 +54,7 @@ Hazard_Detect Hazard_Detect(
 	.reg2_addr	(inst_ID[24:20]),
 	.regd_addr	(rsd_EX),
 	.IF_Op	(IF_flush_signal),
-	.PC_Op	(PC_Mux_select),
+	.Pc_Op	(PC_Mux_select),
 	.Valid	(Hazard_Detect_Valid)
 );
 
