@@ -16,7 +16,7 @@ wire PC_Mux_select;
 wire IF_flush_signal;
 wire ID_beq_result;
 wire[31:0]pc_input;
-wire[31:0]alu_data2_EX;
+wire[31:0]alu_data2_EX,alu_data2_MEM;
 wire[11:0]immgen_12bit_ID;
 wire[2:0]alu_control_EX;
 wire[1:0]alu_op_EX;
@@ -35,6 +35,8 @@ wire[2:0]opcode_ID,opcode_EX,opcode_MEM,opcode_WB;
 wire valid_ID,valid_EX,valid_MEM,valid_WB;
 wire[31:0]memory_data_MEM,memory_data_WB;
 wire[31:0]add_result_Ah_Jia;
+wire reg_src_WB;//0:alu, 1:memory
+wire[31:0]register_input_WB;
 
 Control Control(
 	.inst       (inst_ID),
@@ -78,11 +80,13 @@ Buf_ID_EX Buffer_ID_EX(
 Buf_EX_MEM Buffer_EX_MEM(
 	.clk_i(clk_i),
 	.alu_result_i(alu_result_EX),
+	.alu_data2_i(alu_data2_EX),
 	.rs2_i(rs2_EX),
 	.rsd_i(rsd_EX),
 	.Op_i(opcode_EX),
 	.valid_i(valid_EX),
 	.alu_result_o(alu_result_MEM),
+	.alu_data2_o(alu_data2_MEM),
 	.rs2_o(rs2_MEM),
 	.rsd_o(rsd_MEM),
 	.Op_o(opcode_MEM),
@@ -146,12 +150,29 @@ Instruction_Memory Instruction_Memory(
     .instr_o    (inst_IF)
 );
 
+wire[31:0]data_memory_result;
+
+MUX32 RegWriteSrc_Mux(
+	.data1_i(data_memory_result),
+	.data2_i(alu_result_WB),
+	.select_i(reg_src_WB),
+	.data_o(register_input_WB)
+);
+
+Data_Memory Data_Memory(
+	.clk_i(clk_i),
+	.addr_i(alu_result_MEM),
+	.data_i(alu_data2_MEM).
+	.mem_write_i((opcode_MEM==3'b010)? 1'b1:1'b0),
+	.data_o(data_memory_result)
+);
+
 Registers Registers(
     .clk_i      (clk_i),
     .RSaddr_i   (inst_ID[19:15]),
     .RTaddr_i   (inst_ID[24:20]),
     .RDaddr_i   (inst_ID[11:7]), 
-    .RDdata_i   (alu_result_WB),
+    .RDdata_i   (register_input_WB),
     .RegWrite_i (
 		(opcode_WB==3'b011||
 		 opcode_WB==3'b001||
@@ -160,13 +181,6 @@ Registers Registers(
     .RTdata_o   (rs2_data_ID) 
 );
 
-
-MUX5 MUX_RegDst(
-    .data1_i    (),
-    .data2_i    (),
-    .select_i   (),
-    .data_o     ()
-);
 
 ALUSrc_Gen EX_ALUSrc_Gen(
 	.opcode_i(opcode_EX),
