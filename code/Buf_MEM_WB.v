@@ -1,5 +1,6 @@
 module Buf_MEM_WB(
 	clk_i,
+	rst_i,
 	alu_result_i,
 	memory_data_i,
 	rsd_i,
@@ -11,7 +12,7 @@ module Buf_MEM_WB(
 	Op_o,
 	valid_o,
 );
-input clk_i;
+input clk_i,rst_i;
 input[31:0]alu_result_i,memory_data_i;
 output[31:0]alu_result_o,memory_data_o;
 input[4:0]rsd_i;
@@ -33,18 +34,18 @@ assign memory_data_o=memory_data_reg_o;
 assign rsd_o=rsd_reg_o;
 assign Op_o=Op_reg_o;
 assign valid_o=valid_reg_o;
-always @(posedge clk_i) begin
-	alu_result_reg_i<=alu_result_i;
-	memory_data_reg_i<=memory_data_i;
-	rsd_reg_i<=rsd_i;
-	Op_reg_i<=Op_i;
-	valid_reg_i<=valid_i;
+always @(posedge clk_i or negedge rst_i) begin
+	alu_result_reg_i<=rst_i==0?0:alu_result_i;
+	memory_data_reg_i<=rst_i==0?0:memory_data_i;
+	rsd_reg_i<=rst_i==0?0:rsd_i;
+	Op_reg_i<=rst_i==0?0:Op_i;
+	valid_reg_i<=rst_i==0?0:valid_i;
 end
-always @(negedge clk_i) begin
-	alu_result_reg_o<=alu_result_reg_i;
-	memory_data_reg_o<=memory_data_reg_i;
-	rsd_reg_o<=rsd_reg_i;
-	Op_reg_o<=Op_reg_i;
-	valid_reg_o<=valid_reg_i;
+always @(negedge clk_i or negedge rst_i) begin
+	alu_result_reg_o<=rst_i==0?0:alu_result_reg_i;
+	memory_data_reg_o<=rst_i==0?0:memory_data_reg_i;
+	rsd_reg_o<=rst_i==0?0:rsd_reg_i;
+	Op_reg_o<=rst_i==0?0:Op_reg_i;
+	valid_reg_o<=rst_i==0?0:valid_reg_i;
 end
 endmodule

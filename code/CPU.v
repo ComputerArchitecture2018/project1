@@ -13,10 +13,9 @@ input               start_i;
 wire[31:0]inst_addr;
 wire[31:0]next_inst_addr;
 wire PC_Mux_select;
-wire IF_flush_signal;
+wire IF_stall_signal,IF_flush_signal;
 wire ID_beq_result;
 wire[31:0]pc_input;
-wire[31:0]alu_data2_EX,alu_data2_MEM;
 wire[11:0]immgen_12bit_ID;
 wire[2:0]alu_control_EX;
 wire[1:0]alu_op_EX;
@@ -25,7 +24,7 @@ wire alu_src_EX;
 wire[31:0]inst_IF,inst_ID,inst_EX;
 wire[31:0]pc_ID;
 wire[31:0]rs1_data_ID,rs1_data_EX;
-wire[31:0]rs2_data_ID,rs2_data_EX;
+wire[31:0]rs2_data_ID,rs2_data_EX,rs2_data_MEM;
 wire[31:0]imm_ID,imm_EX,imm_shifted_ID;
 wire[31:0]alu_result_EX,alu_result_MEM,alu_result_WB;
 wire[4:0]rs1_ID,rs1_EX;
@@ -42,8 +41,12 @@ wire Hazard_Detect_Valid,Control_Valid;
 wire Control_IF_flush_signal,Hazard_IF_flush_signal;
 
 assign valid_ID=Hazard_Detect_Valid&Control_Valid;
-assign pc_write=~IF_flush_signal;//IF_flush: stall
-assign IF_flush_signal=Control_IF_flush_signal&Hazard_IF_flush_signal;
+assign pc_write=~IF_stall_signal;//IF_flush: stall
+assign IF_flush_signal=Control_IF_flush_signal;
+assign IF_stall_signal=Hazard_IF_flush_signal;
+assign reg_src_WB=(opcode_WB==3'b011||opcode_WB==3'b001)? 1'b0:
+				  (opcode_WB==3'b000)? 1'b1:
+				  1'bX;
 
 Control Control(
 	.inst       (inst_ID),
@@ -55,6 +58,7 @@ Control Control(
 );
 
 Hazard_Detect Hazard_Detect(
+	.valid_i(valid_EX),
 	.ID_EX_M	(opcode_EX),
 	.reg1_addr	(inst_ID[19:15]),
 	.reg2_addr	(inst_ID[24:20]),
@@ -65,15 +69,20 @@ Hazard_Detect Hazard_Detect(
 
 Buf_IF_ID Buffer_IF_ID(
 	.clk_i(clk_i),
+	.rst_i(rst_i),
 	.pc_i(inst_addr),
 	.inst_i(inst_IF),
+	.IF_stall_i(IF_stall_signal),
 	.IF_flush_i(IF_flush_signal),
 	.pc_o(pc_ID),
 	.inst_o(inst_ID)
 );
 
+wire[31:0]rs1_data_raw_EX,rs2_data_raw_EX;
+
 Buf_ID_EX Buffer_ID_EX(
 	.clk_i(clk_i),
+	.rst_i(rst_i),
 	.inst_i(inst_ID),
 	.rs1_data_i(rs1_data_ID),
 	.rs2_data_i(rs2_data_ID),
@@ -84,8 +93,8 @@ Buf_ID_EX Buffer_ID_EX(
 	.Op_i(opcode_ID),
 	.valid_i(valid_ID),
 	.inst_o(inst_EX),
-	.rs1_data_o(rs1_data_EX),
-	.rs2_data_o(rs2_data_EX),
+	.rs1_data_o(rs1_data_raw_EX),
+	.rs2_data_o(rs2_data_raw_EX),
 	.imm_o(imm_EX),
 	.rs1_o(rs1_EX),
 	.rs2_o(rs2_EX),
@@ -96,14 +105,15 @@ Buf_ID_EX Buffer_ID_EX(
 
 Buf_EX_MEM Buffer_EX_MEM(
 	.clk_i(clk_i),
+	.rst_i(rst_i),
 	.alu_result_i(alu_result_EX),
-	.alu_data2_i(alu_data2_EX),
+	.rs2_data_i(rs2_data_EX),
 	.rs2_i(rs2_EX),
 	.rsd_i(rsd_EX),
 	.Op_i(opcode_EX),
 	.valid_i(valid_EX),
 	.alu_result_o(alu_result_MEM),
-	.alu_data2_o(alu_data2_MEM),
+	.rs2_data_o(rs2_data_MEM),
 	.rs2_o(rs2_MEM),
 	.rsd_o(rsd_MEM),
 	.Op_o(opcode_MEM),
@@ -112,6 +122,7 @@ Buf_EX_MEM Buffer_EX_MEM(
 
 Buf_MEM_WB Buffer_MEM_WB(
 	.clk_i(clk_i),
+	.rst_i(rst_i),
 	.alu_result_i(alu_result_MEM),
 	.memory_data_i(memory_data_MEM),
 	.rsd_i(rsd_MEM),
@@ -127,7 +138,7 @@ Buf_MEM_WB Buffer_MEM_WB(
 Beq ID_Beq(
 	.data1_i(rs1_data_ID),
 	.data2_i(rs2_data_ID),
-	.Beq_Op(opcode_ID==110? 1'b1:1'b0),
+	.Beq_Op(opcode_ID==3'b110 ? 1'b1:1'b0),
 	.Beq(ID_beq_result)
 );
 
@@ -170,28 +181,28 @@ Instruction_Memory Instruction_Memory(
     .instr_o    (inst_IF)
 );
 
-wire[31:0]data_memory_result;
-
 Data_Memory Data_Memory(
 	.clk_i(clk_i),
 	.addr_i(alu_result_MEM),
-	.data_i(alu_data2_MEM),
-	.mem_write_i((opcode_MEM==3'b010)? 1'b1:1'b0),
-	.data_o(data_memory_result)
+	.data_i(rs2_data_MEM),
+	.mem_write_i((valid_MEM&&opcode_MEM==3'b010)? 1'b1:1'b0),
+	.data_o(memory_data_MEM)
 );
 
 MUX32 RegWriteSrc_Mux(
-	.data1_i(data_memory_result),
-	.data2_i(alu_result_WB),
+	.data1_i(alu_result_WB),
+	.data2_i(memory_data_WB),
 	.select_i(reg_src_WB),
 	.data_o(register_input_WB)
 );
 
 wire regwrite_MEM,regwrite_WB;
-assign regwrite_MEM=(opcode_MEM==3'b011||
+assign regwrite_MEM=valid_MEM&&
+					(opcode_MEM==3'b011||
 					 opcode_MEM==3'b001||
 					 opcode_MEM==3'b000)? 1'b1:1'b0;
-assign regwrite_WB =(opcode_WB==3'b011||
+assign regwrite_WB =valid_WB&&
+					(opcode_WB==3'b011||
 					 opcode_WB==3'b001||
 					 opcode_WB==3'b000)? 1'b1:1'b0;
 
@@ -220,7 +231,7 @@ Sign_Extend Sign_Extend(
     .data_o     (imm_ID)
 );
 
-wire[31:0]alu_data1_EX,alu_data2_mux_input;
+wire[31:0]alu_data2_EX;
 wire[1:0]forward_A,forward_B;
 
 Forwarding_Unit Forwarding_Unit(//TODO
@@ -235,19 +246,19 @@ Forwarding_Unit Forwarding_Unit(//TODO
 );
 
 MUX32_3i MUX_ALU_data1(
-	.data1_i(rs1_data_EX),
+	.data1_i(rs1_data_raw_EX),
 	.data2_i(alu_result_MEM),
-	.data3_i(alu_result_WB),
+	.data3_i(register_input_WB),//might be memory data
 	.select_i(forward_A),
-	.data_o(alu_data1_EX)
+	.data_o(rs1_data_EX)
 );
 
 MUX32_3i MUX_ALU_data2(
-	.data1_i(alu_data2_mux_input),
+	.data1_i(rs2_data_raw_EX),
 	.data2_i(alu_result_MEM),
-	.data3_i(alu_result_WB),
+	.data3_i(register_input_WB),
 	.select_i(forward_B),
-	.data_o(alu_data2_EX)
+	.data_o(rs2_data_EX)
 );
 
 ALUSrc_Gen EX_ALUSrc_Gen(
@@ -259,13 +270,13 @@ MUX32 MUX_ALUSrc(
     .data1_i    (rs2_data_EX),
     .data2_i    (imm_EX),
     .select_i   (alu_src_EX),
-    .data_o     (alu_data2_mux_input)
+    .data_o     (alu_data2_EX)
 );
 
 wire[31:0]zero_EX;
 
 ALU ALU(
-    .data1_i    (alu_data1_EX),
+    .data1_i    (rs1_data_EX),
     .data2_i    (alu_data2_EX),
     .ALUCtrl_i  (alu_control_EX),
     .data_o     (alu_result_EX),

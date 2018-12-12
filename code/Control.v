@@ -12,8 +12,8 @@ output flush_op;
 output [2:0]Opcode;
 output Valid,PC_MUX_op;
 wire [6:0] Op;
-assign flush_op = (Beq == 1)?1:0;
-assign PC_MUX_op = (Beq == 1)?1:0;
+assign flush_op = (Beq == 1)? 1:0;
+assign PC_MUX_op = (Beq == 1)? 1:0;
 assign Op = inst[6:0];
 
 assign Opcode = inst[6:4];

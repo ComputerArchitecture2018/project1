@@ -9,5 +9,6 @@ assign data_o=(ALUCtrl_i==3'b001)?data1_i&data2_i:
 			  (ALUCtrl_i==3'b011)?data1_i+data2_i:
 			  (ALUCtrl_i==3'b100)?data1_i-data2_i:
 			  (ALUCtrl_i==3'b101)?data1_i*data2_i:
+			  (ALUCtrl_i==3'b110)?data1_i:
 			  Zero_o;
 endmodule
