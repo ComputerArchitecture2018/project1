@@ -11,19 +11,12 @@ module Signal_Control
 
 input [6:0] Op_i;
 
-output ALUSrc_o;
-output ResultSrc_o;
-output RegWrite_o;
-output [1:0] ALUOp_o;
-output MemWrite_o;
-output Branch_o;
-
-reg ALUSrc_o;
-reg ResultSrc_o;
-reg RegWrite_o;
-reg [1:0] ALUOp_o;
-reg MemWrite_o;
-reg Branch_o;
+output reg ALUSrc_o;
+output reg ResultSrc_o;
+output reg RegWrite_o;
+output reg [1:0] ALUOp_o;
+output reg MemWrite_o;
+output reg Branch_o;
 
 wire [2:0] det;
 assign det = Op_i[6:4];
