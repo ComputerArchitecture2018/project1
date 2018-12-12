@@ -152,19 +152,19 @@ Instruction_Memory Instruction_Memory(
 
 wire[31:0]data_memory_result;
 
+Data_Memory Data_Memory(
+	.clk_i(clk_i),
+	.addr_i(alu_result_MEM),
+	.data_i(alu_data2_MEM),
+	.mem_write_i((opcode_MEM==3'b010)? 1'b1:1'b0),
+	.data_o(data_memory_result)
+);
+
 MUX32 RegWriteSrc_Mux(
 	.data1_i(data_memory_result),
 	.data2_i(alu_result_WB),
 	.select_i(reg_src_WB),
 	.data_o(register_input_WB)
-);
-
-Data_Memory Data_Memory(
-	.clk_i(clk_i),
-	.addr_i(alu_result_MEM),
-	.data_i(alu_data2_MEM).
-	.mem_write_i((opcode_MEM==3'b010)? 1'b1:1'b0),
-	.data_o(data_memory_result)
 );
 
 Registers Registers(
@@ -181,19 +181,6 @@ Registers Registers(
     .RTdata_o   (rs2_data_ID) 
 );
 
-
-ALUSrc_Gen EX_ALUSrc_Gen(
-	.opcode_i(opcode_EX),
-	.ALUSrc_o(alu_src_EX)
-);
-
-MUX32 MUX_ALUSrc(
-    .data1_i    (rs2_data_EX),
-    .data2_i    (imm_EX),
-    .select_i   (alu_src_EX),
-    .data_o     (alu_data2_EX)
-);
-
 ImmGen ID_ImmGen(
 	.inst_i(inst_ID),
 	.imm_o(immgen_12bit_ID)
@@ -204,10 +191,52 @@ Sign_Extend Sign_Extend(
     .data_o     (imm_ID)
 );
 
+wire[31:0]alu_data1_EX,alu_data2_mux_input;
+wire[1:0]forward_A,forward_B;
+
+Forwarding_Unit Forwarding_Unit(//TODO
+	.Rs1_i(),
+	.Rs2_i(),
+	.RegWrite_p_i(),
+	.Rd_p_i(),
+	.RegWrite_pp_i(),
+	.Rd_pp_i(),
+	.ForwardA_o(forward_A),
+	.ForwardB_o(forward_B),
+);
+
+MUX32_3i MUX_ALU_data1(
+	.data1_i(rs1_data_EX),
+	.data2_i(alu_result_MEM),
+	.data3_i(alu_result_WB),
+	.select_i(forward_A),
+	.data_o(alu_data1_EX)
+);
+
+MUX32_3i MUX_ALU_data2(
+	.data1_i(alu_data2_mux_input),
+	.data2_i(alu_result_MEM),
+	.data3_i(alu_result_WB),
+	.select_i(forward_B),
+	.data_o(alu_data2_EX),
+);
+
+ALUSrc_Gen EX_ALUSrc_Gen(
+	.opcode_i(opcode_EX),
+	.ALUSrc_o(alu_src_EX)
+);
+
+MUX32 MUX_ALUSrc(
+    .data1_i    (rs2_data_EX),
+    .data2_i    (imm_EX),
+    .select_i   (alu_src_EX),
+    .data_o     (alu_data2_mux_input)
+);
+
 wire[31:0]zero_EX;
 
 ALU ALU(
-    .data1_i    (rs1_data_EX),
+    .data1_i    (alu_data1_EX),
     .data2_i    (alu_data2_EX),
     .ALUCtrl_i  (alu_control_EX),
     .data_o     (alu_result_EX),
