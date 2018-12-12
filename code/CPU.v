@@ -22,7 +22,7 @@ wire[2:0]alu_control_EX;
 wire[1:0]alu_op_EX;
 wire alu_src_EX;
 
-wire[31:0]inst_IF,inst_ID,inst_EX;//TODO connect inst_EX
+wire[31:0]inst_IF,inst_ID,inst_EX;
 wire[31:0]pc_ID;
 wire[31:0]rs1_data_ID,rs1_data_EX;
 wire[31:0]rs2_data_ID,rs2_data_EX;
@@ -56,6 +56,7 @@ Buf_IF_ID Buffer_IF_ID(
 
 Buf_ID_EX Buffer_ID_EX(
 	.clk_i(clk_i),
+	.inst_i(inst_ID),
 	.rs1_data_i(rs1_data_ID),
 	.rs2_data_i(rs2_data_ID),
 	.imm_i(imm_ID),
@@ -64,6 +65,7 @@ Buf_ID_EX Buffer_ID_EX(
 	.rsd_i(rsd_ID),
 	.Op_i(opcode_ID),
 	.valid_i(valid_ID),
+	.inst_o(inst_EX),
 	.rs1_data_o(rs1_data_EX),
 	.rs2_data_o(rs2_data_EX),
 	.imm_o(imm_EX),
