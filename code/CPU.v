@@ -25,7 +25,7 @@ wire[31:0]inst_IF,inst_ID,inst_EX;
 wire[31:0]pc_ID;
 wire[31:0]rs1_data_ID,rs1_data_EX;
 wire[31:0]rs2_data_ID,rs2_data_EX;
-wire[31:0]imm_ID,imm_EX;
+wire[31:0]imm_ID,imm_EX,imm_shifted_ID;
 wire[31:0]alu_result_EX,alu_result_MEM,alu_result_WB;
 wire[4:0]rs1_ID,rs1_EX;
 wire[4:0]rs2_ID,rs2_EX,rs2_MEM;
@@ -33,6 +33,7 @@ wire[4:0]rsd_ID,rsd_EX,rsd_MEM;
 wire[2:0]opcode_ID,opcode_EX,opcode_MEM,opcode_WB;
 wire valid_ID,valid_EX,valid_MEM,valid_WB;
 wire[31:0]memory_data_MEM,memory_data_WB;
+wire[31:0]add_result_Ah_Jia;
 
 Control Control(
 	.inst       (inst_ID),
@@ -104,6 +105,17 @@ Beq ID_Beq(
 	.Beq(ID_beq_result)
 );
 
+Shift_Left Imm_Shift_Left(
+	.data_in(imm_ID),
+	.data_o(imm_shifted_ID)
+);
+
+Adder Add_Ah_Jia(//our 阿加 <3
+	.data1_in(pc_ID),
+	.data2_in(imm_shifted_ID),
+	.data_o(add_result_Ah_Jia)
+);
+
 Adder Add_PC(
     .data1_in   (inst_addr),
     .data2_in   (32'd4),
@@ -121,7 +133,7 @@ PC PC(
 
 MUX32 PC_Mux(
 	.data1_i(next_inst_addr),
-	.data2_i(),//TODO 阿加
+	.data2_i(add_result_Ah_Jia),
 	.select_i(PC_Mux_select),
 	.data_o(pc_input)
 );
