@@ -7,7 +7,8 @@ reg                Reset;
 reg                Start;
 integer            i, outfile, counter;
 
-reg[5:0]j;
+reg [5:0]   j;
+integer     Stall, Flush;
 
 always #(`CYCLE_TIME/2) Clk = ~Clk;    
 
@@ -21,6 +22,9 @@ initial begin
 	$dumpfile("dumpfile");
 	$dumpvars;
     counter = 0;
+
+    Stall = 0;
+    Flush = 0;
     
     // initialize instruction memory
     for(i=0; i<256; i=i+1) begin
@@ -56,10 +60,15 @@ end
 always@(posedge Clk) begin
     if(counter == 30)    // stop after 30 cycles
         $stop;
-    
-    // print Start, Stall, Flush;
+
+    if (CPU.IF_stall_signal)
+        Stall = Stall + 1;
+    if (CPU.IF_flush_signal)
+        Flush = Flush + 1;
+
+    // print Start, Stall, Flush
     $fdisplay(outfile, "cycle = %d, Start = %d, Stall = %d, Flush = %d",
-        counter, Start, CPU.IF_stall_signal, CPU.IF_flush_signal
+        counter, Start, Stall, Flush
     );
 
     // print PC
