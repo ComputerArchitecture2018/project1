@@ -273,14 +273,11 @@ MUX32 MUX_ALUSrc(
     .data_o     (alu_data2_EX)
 );
 
-wire[31:0]zero_EX;
-
 ALU ALU(
     .data1_i    (rs1_data_EX),
     .data2_i    (alu_data2_EX),
     .ALUCtrl_i  (alu_control_EX),
-    .data_o     (alu_result_EX),
-    .Zero_o     (zero_EX)
+    .data_o     (alu_result_EX)
 );
 
 ALUOpGen EX_ALUOpGen(
