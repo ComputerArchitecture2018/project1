@@ -1,4 +1,4 @@
-module ALUOpGen(
+module ALUOp_Gen(
 	opcode_i,
 	ALU_Op_o
 );

@@ -280,7 +280,7 @@ ALU ALU(
     .data_o     (alu_result_EX)
 );
 
-ALUOpGen EX_ALUOpGen(
+ALUOp_Gen EX_ALUOp_Gen(
 	.opcode_i(opcode_EX),
 	.ALU_Op_o(alu_op_EX)
 );
