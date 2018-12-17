@@ -64,8 +64,8 @@ always @(posedge clk_i or negedge rst_i) begin
 end
 always @(negedge clk_i or negedge rst_i) begin
 	inst_reg_o<=rst_i==0?0:inst_reg_i;
-	rs1_data_reg_o<=rst_i==0?0:rs1_data_reg_i;
-	rs2_data_reg_o<=rst_i==0?0:rs2_data_reg_i;
+	rs1_data_reg_o<=rst_i==0?0:rs1_data_i;
+	rs2_data_reg_o<=rst_i==0?0:rs2_data_i;
 	imm_reg_o<=rst_i==0?0:imm_reg_i;
 	rs1_reg_o<=rst_i==0?0:rs1_reg_i;
 	rs2_reg_o<=rst_i==0?0:rs2_reg_i;
